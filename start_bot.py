@@ -1,45 +1,87 @@
 import telebot
 from decouple import config
 from telebot import types
+import random
+import string
+
 
 bot = telebot.TeleBot(config("TOKEN_BOT"))
 
 
-@bot.message_handler(commands=["start", "hi"])
-def get_start_message(message):
-    full_name = f"{message.from_user.username}"
-    text = f"Welcome {full_name}"
-    bot.send_message(message.chat.id, text)
-    # bot.reply_to(message, text)
 
 
-@bot.message_handler(content_types=["text"])
-def get_message(message):
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    if message.text.lower() == "меню":
-        text = "Выберите пожалуйста: чай или кофе"
-        btn1 = types.InlineKeyboardButton("Чай", callback_data="tea")
-        btn2 = types.InlineKeyboardButton("Кофе", callback_data="coffee")
-        markup.add(btn1, btn2)
-        bot.send_message(message.chat.id, text, reply_markup=markup)
+
+length = 10
+length1 = 20
+
+lower = string.ascii_lowercase
+upper = string.ascii_uppercase
+num = string.digits
+symbols = string.punctuation
+
+all = lower + upper + num + symbols
+
+temp = random.sample(all, length)
+temp1 = random.sample(all, length1)
+password = "".join(temp)
+password1 = "".join(temp1)
 
 
-@bot.callback_query_handler(func=lambda call: True)
-def get_callback_data(call):
+@bot.message_handler(commands=['start'])
+def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    if call.data == "tea":
-        btn1 = types.KeyboardButton("black tea")
-        btn2 = types.KeyboardButton("blue tea")
-        btn3 = types.KeyboardButton("green tea")
-        markup.add(btn1, btn2, btn3)
-    if call.data == "coffee":
-        btn1 = types.KeyboardButton("latte")
-        btn2 = types.KeyboardButton("Cappucciano")
-        btn3 = types.KeyboardButton("Espresso")
-        markup.add(btn1, btn2, btn3)
-    bot.send_message(call.message.chat.id, f"Would you rather to drink", reply_markup=markup)
+    btn1 = types.KeyboardButton("Русский")
+    btn2 = types.KeyboardButton("English")
+    markup.add(btn1, btn2)
+    bot.send_message(message.chat.id, text="Пожалуйста выберите язык | Please choose your language".format(message.from_user), reply_markup=markup)
 
+# ВЫБОР ЯЗЫКА
+@bot.message_handler(content_types=['text'])
+def func(message):
+    if(message.text == "Русский"):
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        text = "Какой пароль хотите: Простой или Сложный?"
+        btn1 = types.KeyboardButton("Простой")
+        btn2 = types.KeyboardButton("Сложный")
+        back = types.KeyboardButton("Вернуться в главное меню")
+        markup.add(btn1, btn2, back)
+        bot.send_message(message.chat.id, text, reply_markup=markup)
+    elif(message.text == "English"):
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        text = "What kind of password do you want: Easy or Strong?"
+        btn1 = types.KeyboardButton("Easy")
+        btn2 = types.KeyboardButton("Strong")
+        back = types.KeyboardButton("Back to main menu")
+        markup.add(btn1, btn2, back)
+        bot.send_message(message.chat.id, text, reply_markup=markup)
+# ГЕНЕРАЦИЯ ПАРОЛЯ
+    elif (message.text == "Простой"):
+        bot.send_message(message.chat.id, f' You password:  {"".join(random.sample(all, length))}')
+
+    elif (message.text == "Сложный"):
+        bot.send_message(message.chat.id, f' Ваш пароль:  {"".join(random.sample(all, length1))}')
+
+    elif (message.text == "Easy"):
+        bot.send_message(message.chat.id, f' You password:  {"".join(random.sample(all, length))}')
+
+    elif (message.text == "Strong"):
+        bot.send_message(message.chat.id, f' You password:  {"".join(random.sample(all, length1))}')
+
+    elif (message.text == "Вернуться в главное меню"):
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        button1 = types.KeyboardButton("Русский")
+        button2 = types.KeyboardButton("English")
+        markup.add(button1, button2)
+        bot.send_message(message.chat.id, text="Вы вернулись в главное меню", reply_markup=markup)
+    elif (message.text == "Back to main menu"):
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        button1 = types.KeyboardButton("Русский")
+        button2 = types.KeyboardButton("English")
+        markup.add(button1, button2)
+        bot.send_message(message.chat.id, text="You came back to main menu", reply_markup=markup)
 
 
 
 bot.polling()
+
+
